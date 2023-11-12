@@ -145,7 +145,7 @@ func (s *Server) Connection(ctx context.Context, msg *gRPC.Greeting) (*gRPC.Empt
 	return &gRPC.Empty{}, nil // error handling missing
 }
 
-func (s *Server) requestAccess(ctx context.Context, msg *gRPC.Request) (*gRPC.Empty, error) {
+func (s *Server) RequestAccess(ctx context.Context, msg *gRPC.Request) (*gRPC.Empty, error) {
 	if state == "HELD" || state == "WANTED" && requestTime < msg.Time {
 		// queue response
 		queue = append(queue, msg.Id)
@@ -156,7 +156,7 @@ func (s *Server) requestAccess(ctx context.Context, msg *gRPC.Request) (*gRPC.Em
 	return nil,nil
 }
 
-func (s *Server) receive(ctx context.Context, msg *gRPC.Response) (*gRPC.Empty, error) {
+func (s *Server) Receive(ctx context.Context, msg *gRPC.Response) (*gRPC.Empty, error) {
 	outstandingResponses = outstandingResponses - 1
 	return &gRPC.Empty{}, nil
 }
