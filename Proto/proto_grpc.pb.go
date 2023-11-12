@@ -4,7 +4,7 @@
 // - protoc             v4.24.3
 // source: Proto/proto.proto
 
-package Proto
+package Homework04
 
 import (
 	context "context"
@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion7
 
 const (
 	ClientConnection_RequestAccess_FullMethodName = "/proto.ClientConnection/requestAccess"
+	ClientConnection_Receive_FullMethodName       = "/proto.ClientConnection/receive"
 	ClientConnection_Connection_FullMethodName    = "/proto.ClientConnection/Connection"
 )
 
@@ -27,7 +28,8 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ClientConnectionClient interface {
-	RequestAccess(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error)
+	RequestAccess(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Empty, error)
+	Receive(ctx context.Context, in *Response, opts ...grpc.CallOption) (*Empty, error)
 	Connection(ctx context.Context, in *Greeting, opts ...grpc.CallOption) (*Empty, error)
 }
 
@@ -39,9 +41,18 @@ func NewClientConnectionClient(cc grpc.ClientConnInterface) ClientConnectionClie
 	return &clientConnectionClient{cc}
 }
 
-func (c *clientConnectionClient) RequestAccess(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error) {
-	out := new(Response)
+func (c *clientConnectionClient) RequestAccess(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
 	err := c.cc.Invoke(ctx, ClientConnection_RequestAccess_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *clientConnectionClient) Receive(ctx context.Context, in *Response, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, ClientConnection_Receive_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +72,8 @@ func (c *clientConnectionClient) Connection(ctx context.Context, in *Greeting, o
 // All implementations must embed UnimplementedClientConnectionServer
 // for forward compatibility
 type ClientConnectionServer interface {
-	RequestAccess(context.Context, *Request) (*Response, error)
+	RequestAccess(context.Context, *Request) (*Empty, error)
+	Receive(context.Context, *Response) (*Empty, error)
 	Connection(context.Context, *Greeting) (*Empty, error)
 	mustEmbedUnimplementedClientConnectionServer()
 }
@@ -70,8 +82,11 @@ type ClientConnectionServer interface {
 type UnimplementedClientConnectionServer struct {
 }
 
-func (UnimplementedClientConnectionServer) RequestAccess(context.Context, *Request) (*Response, error) {
+func (UnimplementedClientConnectionServer) RequestAccess(context.Context, *Request) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RequestAccess not implemented")
+}
+func (UnimplementedClientConnectionServer) Receive(context.Context, *Response) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Receive not implemented")
 }
 func (UnimplementedClientConnectionServer) Connection(context.Context, *Greeting) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Connection not implemented")
@@ -107,6 +122,24 @@ func _ClientConnection_RequestAccess_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ClientConnection_Receive_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Response)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClientConnectionServer).Receive(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ClientConnection_Receive_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClientConnectionServer).Receive(ctx, req.(*Response))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ClientConnection_Connection_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Greeting)
 	if err := dec(in); err != nil {
@@ -135,6 +168,10 @@ var ClientConnection_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "requestAccess",
 			Handler:    _ClientConnection_RequestAccess_Handler,
+		},
+		{
+			MethodName: "receive",
+			Handler:    _ClientConnection_Receive_Handler,
 		},
 		{
 			MethodName: "Connection",

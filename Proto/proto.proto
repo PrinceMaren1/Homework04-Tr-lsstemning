@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package proto;
 
-option go_package = "Homework04";
+option go_package = "./Homework04";
 
 message Request {
     int64 id = 1;
@@ -23,7 +23,9 @@ message Empty {
 }
 
 service ClientConnection {
-    rpc requestAccess(Request) returns (Response);
-
+    rpc requestAccess(Request) returns (Empty);
+    
+    rpc receive(Response) returns (Empty);
+    
     rpc Connection(Greeting) returns (Empty);
 }
