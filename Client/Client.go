@@ -41,6 +41,9 @@ func main() {
 	ports := strings.Split(*peers, ",")
 
 	for i := 0; i < len(ports); i++ {
+		if (ports[i] == "") {
+			continue
+		}
 		p, err := strconv.Atoi(ports[i])
 
 		if err != nil {
@@ -55,7 +58,7 @@ func main() {
 		time.Sleep(time.Duration(rand.Intn(5)) * time.Second)
 
 		if state == "RELEASED" {
-			initiateAccess(ports)
+			initiateAccess(portToPeerClient)
 		}
 	}
 }
@@ -80,13 +83,13 @@ func launchServer() {
 	}
 }
 
-func initiateAccess(ports []string) {
+func initiateAccess(portToPeer map[int64]gRPC.ClientConnectionClient) {
 	state = "WANTED"
-	outstandingResponses = len(ports)
+	outstandingResponses = len(portToPeer)
 	requestTime = lamportTime
 
-	for i := 0; i < len(ports); i++ {
-		_, _ = portToPeerClient[int64(i)].RequestAccess(context.Background(), &gRPC.Request{Id: *port, Time: lamportTime})
+	for _, val := range portToPeer {
+		_, _ = val.RequestAccess(context.Background(), &gRPC.Request{Id: *port, Time: lamportTime})
 	}
 
 	for outstandingResponses > 0 {
