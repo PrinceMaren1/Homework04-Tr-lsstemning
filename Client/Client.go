@@ -163,7 +163,9 @@ func (s *Server) RequestAccess(ctx context.Context, msg *gRPC.Request) (*gRPC.Em
 	// If we are holding access, or want access with higher priority, we queue the response until we are finished
 	// Priority is determined by request time, with Id (represented here by port number) as a tiebreaker
 	if state == "HELD" || state == "WANTED" && (requestTime < msg.Time || (requestTime == msg.Time && msg.Id < *port)) {
-		log.Printf("Comparing my sequence number: %v to the request: %v \n", sequenceNumber, msg.Time)
+		if state == "WANTED" { // for logging purposes
+			log.Printf("Comparing my sequence number: %v to the request: %v \n", sequenceNumber, msg.Time)
+		}
 		// queue response
 		log.Print(": I have priority. Waiting with responding \n")
 		queue = append(queue, msg.Id)
