@@ -148,8 +148,8 @@ func UpdateTime(time int64) {
 
 // Performs critical section
 func PerformCriticalSection() {
-	log.Printf("Client%vDoingCriticalStuff.HelpSpacebarNotSupported\n", *port)
 	time.Sleep(time.Duration(5) * time.Second)
+	log.Printf("Client%vDoingCriticalStuff.HelpSpacebarNotSupported\n", *port)
 }
 
 func (s *Server) Connection(ctx context.Context, msg *gRPC.Greeting) (*gRPC.Empty, error) {
