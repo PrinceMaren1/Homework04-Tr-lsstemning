@@ -51,7 +51,7 @@ func main() {
 	ports := strings.Split(*peers, ",")
 
 	for i := 0; i < len(ports); i++ {
-		if (ports[i] == "") {
+		if ports[i] == "" {
 			continue
 		}
 		p, err := strconv.Atoi(ports[i])
@@ -108,7 +108,7 @@ func initiateAccess(portToPeer map[int64]gRPC.ClientConnectionClient) {
 
 	PerformCriticalSection()
 	log.Println("Sending responses to queued clients now that we are releasing access...")
-	for (len(queue) > 0) {
+	for len(queue) > 0 {
 		// pop element from queue
 		el := queue[0]
 		queue = queue[1:]
@@ -165,18 +165,18 @@ func (s *Server) RequestAccess(ctx context.Context, msg *gRPC.Request) (*gRPC.Em
 	// Priority is determined by request time, with Id (represented here by port number) as a tiebreaker
 	if state == "HELD" || state == "WANTED" && (requestTime < msg.Time || (requestTime == msg.Time && msg.Id < *port)) {
 		// queue response
-		log.Print(": Responding with NO\n")
+		log.Print(": I have priority. Waiting with responding \n")
 		queue = append(queue, msg.Id)
 	} else {
 		log.Print(": Responding with YES\n")
 		_, _ = portToPeerClient[int64(msg.Id)].Receive(context.Background(), &gRPC.Response{Id: *port, Time: sequenceNumber})
 		return &gRPC.Empty{}, nil
 	}
-	return &gRPC.Empty{},nil
+	return &gRPC.Empty{}, nil
 }
 
 func (s *Server) Receive(ctx context.Context, msg *gRPC.Response) (*gRPC.Empty, error) {
-	log.Printf("Received access permission from client %v. Waiting for %v more responses\n", msg.Id, outstandingResponses - 1)
+	log.Printf("Received access permission from client %v. Waiting for %v more responses\n", msg.Id, outstandingResponses-1)
 	outstandingResponses = outstandingResponses - 1
 	return &gRPC.Empty{}, nil
 }
