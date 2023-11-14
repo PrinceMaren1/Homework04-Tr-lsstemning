@@ -92,7 +92,7 @@ func launchServer() {
 }
 
 func initiateAccess(portToPeer map[int64]gRPC.ClientConnectionClient) {
-	log.Printf("Client %v is initiating access request with sequence number %v \n", *port, sequenceNumber)
+	log.Printf("Client %v (ME) is initiating access request with sequence number %v \n", *port, sequenceNumber)
 	state = "WANTED"
 	outstandingResponses = len(portToPeer)
 	requestTime = sequenceNumber
@@ -125,7 +125,7 @@ func connect(dialPort int64) {
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	}
 
-	log.Printf("Client %d: Attemps to dial to peer on port %v", *port, dialPort)
+	log.Printf("Client %d: (ME) Attemps to dial to peer on port %v", *port, dialPort)
 
 	var conn *grpc.ClientConn
 
@@ -164,13 +164,13 @@ func (s *Server) RequestAccess(ctx context.Context, msg *gRPC.Request) (*gRPC.Em
 	// Priority is determined by request time, with Id (represented here by port number) as a tiebreaker
 	if state == "HELD" || state == "WANTED" && (requestTime < msg.Time || (requestTime == msg.Time && msg.Id < *port)) {
 		if state == "WANTED" { // for logging purposes
-			log.Printf("Comparing my sequence number: %v to the request: %v \n", sequenceNumber, msg.Time)
+			log.Printf("Comparing my sequence number: %v to the request: %v \n", requestTime, msg.Time)
 		}
 		// queue response
-		log.Print(": I have priority. Waiting with responding \n")
+		log.Print("I have priority. Waiting with responding \n")
 		queue = append(queue, msg.Id)
 	} else {
-		log.Print(": Responding with YES\n")
+		log.Print("Responding with YES\n")
 		_, _ = portToPeerClient[int64(msg.Id)].Receive(context.Background(), &gRPC.Response{Id: *port, Time: sequenceNumber})
 		return &gRPC.Empty{}, nil
 	}
