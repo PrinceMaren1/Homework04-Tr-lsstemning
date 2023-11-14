@@ -148,7 +148,7 @@ func UpdateTime(time int64) {
 
 // Performs critical section
 func PerformCriticalSection() {
-	log.Printf("Client%vDoingCriticalStuff.HelpSpacebarBroke\n", *port)
+	log.Printf("Client%vDoingCriticalStuff.HelpSpacebarNotSupported\n", *port)
 	time.Sleep(time.Duration(5) * time.Second)
 }
 
